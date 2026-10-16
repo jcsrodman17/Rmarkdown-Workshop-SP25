@@ -1,0 +1,112 @@
+---
+title: "R Markdown Workshop 2025"
+author: "Jack Rodman"
+date: "2025-05-28"
+output:
+  word_document:
+    toc: true
+  html_document:
+    toc: true
+    toc_float: true
+    theme: flatly
+---
+
+## Welcome!
+
+This is an R Markdown document in HTML format. It includes other syntax for authoring PDF and Word documents.\
+For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document.
+
+First, we're going to set up our code chunks.
+
+## Set-up code chunk
+```{r setup, include=T, message=F}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir="/Users/jackrodman/Documents/SCTC/practice data")
+
+
+#This sets the working directory for the entire R Markdown file
+
+#lets load some packages
+library(ggplot2)
+library(rstatix)
+library(Hmisc)
+library(jtools)
+```
+
+```{r loaddata, echo=T}
+#we can now load data from the new working directory
+places_data = read.csv("places_tf.csv", header=T, sep=",")
+
+#lets subset the data to only save places with a better climate
+climate_subset = subset(places_data, climate>=2.5)
+summary(climate_subset$climate)
+
+#how about a variable transformation
+climate_subset$log_climate = log(climate_subset$climate)
+str(climate_subset)
+```
+Both the new dataframe and the transformed variable will be stored in the .rmd file and can be readily used throughout the document
+
+## General code structure
+You can embed an R code chunk that shows both the results and the underlying code. Like this:
+
+```{r embeded code}
+summary(climate_subset)
+```
+
+Or you can generate output without showing the underlying R code:
+```{r non-embedded code, echo=F}
+summary(climate_subset$health)
+summary(climate_subset$recreate)
+```
+
+
+## Including Plots
+
+You can also embed plots within a report using either the base `plot()` function or `ggplot2` package, for example:
+
+```{r ggplot, echo=FALSE, message=FALSE, fig.cap="This is a scatterplot",fig.align='center'}
+ggplot(climate_subset, aes(x=recreate, y=health)) + geom_point(color="steelblue3") + 
+      geom_smooth(method="lm", se=F) + theme_bw()
+
+hist(climate_subset$health)
+hist(climate_subset$recreate)
+```
+
+
+## Running Analyses
+```{r correlation, echo=F}
+#cor.test() function from the base stats package
+cor.test(climate_subset$recreate, climate_subset$health, method="pearson", conf.level=0.95)
+```
+```{r multivariable linear regression, echo=T}
+mod1 = lm(health ~ recreate + econ, data=climate_subset)
+summ(mod1, confint=T, digits=2) #summ() function from the jtools package
+```
+Note that the `echo = TRUE` parameter was added to the code chunk to print the underlying R code. This also greatly helps with reproducibility as it allows others to see the methodlogy that was used to generate your results.
+
+
+## Inline code
+Inline code can also include functions or objects previously created in a regular code chunk. Inline code can show the underlying code without evaluating (aka just printing the code) or by evaluating and printing the code results. Like this!
+
+Create an object that contains the mean climate in the 'places' dataset rounded to 3 digits
+```{r}
+mean_climate = round(mean(places_data$climate), digits=5)
+```
+
+
+**Then write new text that contains an inline code function with your created object**
+
+The mean climate of all cars was `mean_climate`  -- only printing code\
+The mean speed of all cars was `r mean_climate`  -- evaluating and printing results
+
+
+This is new *text*
+
+```{r new chunk}
+
+
+
+```
